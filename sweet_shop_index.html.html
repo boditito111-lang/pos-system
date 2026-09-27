@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام كاشير الحلويات والمخبوزات الشامل</title>
+    <!-- Bootstrap 5 RTL & FontAwesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            color: #1e293b;
+        }
+
+        .app-card {
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+        }
+
+        .product-card {
+            transition: all 0.25s ease;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -3px rgba(217, 119, 6, 0.2);
+            border-color: #f59e0b;
+            background: #fff;
+        }
+
+        .hidden { display: none !important; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+    </style>
+</head>
+<body class="p-2 md:p-4">
+
+<div class="container-fluid max-w-7xl mx-auto">
+
+    <!-- ==================== LOGIN SCREEN ==================== -->
+    <div id="screen-login" class="max-w-md mx-auto my-12 login-card p-8 rounded-3xl text-right">
+        <div class="text-center mb-6">
+            <div class="w-20 h-20 bg-amber-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg mb-3">
+                <i class="fa-solid fa-store text-4xl text-slate-900"></i>
+            </div>
+            <h1 class="text-2xl font-black text-slate-800" id="login-store-title">حلوياتك</h1>
+            <p class="text-xs text-slate-500 mt-1 font-semibold">يا صباح الخير</p>
+        </div>
+
+        <form onsubmit="handleLogin(event)" class="space-y-4">
+            <div>
+                <label class="form-label text-slate-700 font-bold text-xs">كود المستخدم (رقم الدخول)</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-slate-100"><i class="fa-solid fa-user text-slate-500"></i></span>
+                    <input type="text" id="login-user-id" class="form-control font-bold" placeholder="أدخل رقم الكود (مثال: 1)" required>
+                </div>
+            </div>
+
+            <div>
+                <label class="form-label text-slate-700 font-bold text-xs">كلمة السر</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-slate-100"><i class="fa-solid fa-lock text-slate-500"></i></span>
+                    <input type="password" id="login-password" class="form-control" placeholder="أدخل كلمة السر" required>
+                </div>
+            </div>
+
+            <div id="opening-cash-container">
+                <label class="form-label text-slate-700 font-bold text-xs text-rose-600">رصيد بداية الخزنة (العهدة - إجباري) *</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-amber-100 font-bold text-amber-800">ج.م</span>
+                    <input type="number" step="0.01" id="login-opening-cash" class="form-control font-bold text-indigo-900 bg-amber-50" placeholder="أدخل المبلغ الموجود بالدرج" required min="0">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-warning w-100 py-3 font-black text-slate-900 bg-amber-500 hover:bg-amber-600 rounded-xl transition shadow-md mt-2">
+                <i class="fa-solid fa-key me-1"></i> فتح الخزنة وتسجيل الدخول
+            </button>
+        </form>
+
+        <div class="mt-6 pt-4 border-t border-slate-200 text-xs text-slate-500 text-center space-y-1">
+            <p class="font-mono"><b>حساب المدير:</b> الكود (1) | كلمة السر (admin)</p>
+            <p class="font-mono"><b>حساب الكاشير:</b> الكود (101) | كلمة السر (1234)</p>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN DASHBOARD ==================== -->
+    <div id="main-dashboard" class="hidden">
+        <!-- Header Nav -->
+        <header class="bg-slate-900/90 backdrop-blur-md text-white rounded-2xl p-3 mb-4 flex flex-wrap justify-between items-center gap-3 border border-slate-700 shadow-xl">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center font-bold text-slate-900 text-xl">
+                    <i class="fa-solid fa-cookie-bite"></i>
+                </div>
+                <div>
+                    <span class="font-black text-lg text-amber-400 block leading-none" id="header-store-name">حلويات الشرق</span>
+                    <span class="text-[11px] text-slate-400">نظام الكاشير الموحد</span>
+                </div>
+                <span class="text-xs bg-slate-800 border border-slate-700 px-3 py-1 rounded-lg text-slate-300 me-2">
+                    <i class="fa-solid fa-user-circle me-1 text-emerald-400"></i>
+                    <span id="current-user-display">-</span>
+                </span>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="switchTab('pos')" id="tab-pos" class="btn btn-warning font-bold text-slate-900 px-3 btn-sm rounded-lg"><i class="fa-solid fa-cash-register me-1"></i> نقطة البيع</button>
+                <button onclick="switchTab('products')" id="tab-products" class="btn btn-outline-light px-3 btn-sm rounded-lg admin-only hidden"><i class="fa-solid fa-boxes-stacked me-1"></i> المخزون</button>
+                <button onclick="switchTab('reports')" id="tab-reports" class="btn btn-outline-light px-3 btn-sm rounded-lg admin-only hidden"><i class="fa-solid fa-chart-line me-1"></i> التقارير والورديات</button>
+                <button onclick="switchTab('users')" id="tab-users" class="btn btn-outline-light px-3 btn-sm rounded-lg admin-only hidden"><i class="fa-solid fa-users-gear me-1"></i> الكاشيرات</button>
+                <button onclick="openVaultModal()" class="btn btn-outline-warning px-3 btn-sm rounded-lg"><i class="fa-solid fa-vault me-1"></i> تقفيل الخزنة</button>
+                <button onclick="logout()" class="btn btn-danger font-bold px-3 btn-sm rounded-lg"><i class="fa-solid fa-right-from-bracket me-1"></i> إغلاق/خروج</button>
+            </div>
+        </header>
+
+        <!-- POS SCREEN -->
+        <div id="screen-pos" class="row g-3">
+            <!-- Left Side: Products Catalog -->
+            <div class="col-md-7 col-lg-8">
+                <div class="app-card p-4 h-full">
+                    <div class="row g-2 mb-3">
+                        <div class="col-12">
+                            <div class="input-group">
+                                <span class="input-group-text bg-slate-100 border-slate-300"><i class="fa-solid fa-magnifying-glass text-slate-400"></i></span>
+                                <input type="text" id="pos-search" class="form-control border-slate-300 font-semibold" placeholder="ابحث باسم المنتج أو الباركود..." oninput="renderPOSProducts()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3 max-h-[600px] overflow-y-auto p-1" id="pos-products-grid"></div>
+                </div>
+            </div>
+
+            <!-- Right Side: Current Cart -->
+            <div class="col-md-5 col-lg-4">
+                <div class="app-card p-4 flex flex-col h-full">
+                    <div class="flex justify-between items-center border-b pb-3 mb-3">
+                        <h2 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-receipt me-2 text-amber-600"></i>الفاتورة الحالية</h2>
+                        <button onclick="clearCart()" class="btn btn-sm btn-outline-danger rounded-lg"><i class="fa-solid fa-trash me-1"></i>مسح</button>
+                    </div>
+                    <div class="flex-grow overflow-y-auto min-h-[300px] mb-3">
+                        <table class="table table-hover align-middle text-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>الصنف</th>
+                                    <th class="text-center" style="width: 90px;">الكمية</th>
+                                    <th class="text-end">الإجمالي</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-table-body"></tbody>
+                        </table>
+                    </div>
+                    <div class="border-t pt-3 space-y-2 bg-slate-50 p-3 rounded-xl">
+                        <div class="flex justify-between text-slate-600 text-sm">
+                            <span>المجموع الفرعي:</span>
+                            <span id="cart-subtotal" class="font-bold">0.00 ج.م</span>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-600 text-sm">
+                            <span>الخصم (ج.م):</span>
+                            <input type="number" id="cart-discount" value="0" min="0" oninput="updateCartTotals()" class="form-control form-control-sm w-24 text-end font-bold">
+                        </div>
+                        <div class="flex justify-between text-xl font-black text-slate-900 border-t pt-2">
+                            <span>الإجمالي النهائي:</span>
+                            <span id="cart-final" class="text-emerald-600">0.00 ج.م</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 pt-2">
+                            <button onclick="processCheckout('cash')" class="btn btn-success py-2 font-bold rounded-xl shadow-sm">دفع كاش</button>
+                            <button onclick="processCheckout('card')" class="btn btn-primary py-2 font-bold rounded-xl shadow-sm">دفع فيزا</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRODUCTS MANAGEMENT -->
+        <div id="screen-products" class="hidden">
+            <div class="app-card p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-boxes-stacked text-amber-600 me-2"></i>إدارة الأصناف والمخزون</h2>
+                    <button class="btn btn-warning font-bold text-slate-900 bg-amber-500" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                        <i class="fa-solid fa-plus me-1"></i> إضافة صنف جديد
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الصنف</th>
+                                <th>التصنيف</th>
+                                <th>نوع البيع</th>
+                                <th>السعر</th>
+                                <th>المخزون الحالي</th>
+                                <th>الباركود</th>
+                                <th>حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- REPORTS SCREEN -->
+        <div id="screen-reports" class="hidden">
+            <div class="app-card p-4 space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800 mb-4"><i class="fa-solid fa-chart-pie text-amber-600 me-2"></i>تقارير المبيعات العامة</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
+                            <span class="text-xs text-emerald-700 font-bold">إجمالي المبيعات النشطة</span>
+                            <h3 class="text-3xl font-black text-emerald-800 mt-1" id="report-total-sales">0.00 ج.م</h3>
+                        </div>
+                        <div class="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+                            <span class="text-xs text-blue-700 font-bold">عدد الفواتير المصدورة</span>
+                            <h3 class="text-3xl font-black text-blue-800 mt-1" id="report-total-orders">0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-lg mb-3 text-slate-800 border-b pb-2"><i class="fa-solid fa-clock-rotate-left text-indigo-600 me-2"></i>سجل تقفيل الورديات والخزنة للمدير</h3>
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle text-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>المستخدم</th>
+                                    <th>وقت الفتح</th>
+                                    <th>وقت التقفيل</th>
+                                    <th>العهدة Initial</th>
+                                    <th>المبيعات Cash</th>
+                                    <th>المفترض بالخزنة</th>
+                                    <th>الفعلي بالدرج</th>
+                                    <th>العجز / الزيادة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reports-shifts-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-lg mb-3 text-slate-800 border-b pb-2">سجل الفواتير والاسترجاع</h3>
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>رقم الفاتورة</th>
+                                    <th>الكاشير</th>
+                                    <th>التاريخ والوقت</th>
+                                    <th>طريقة الدفع</th>
+                                    <th>الحالة</th>
+                                    <th>الإجمالي</th>
+                                    <th>إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reports-orders-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- USERS MANAGEMENT SCREEN -->
+        <div id="screen-users" class="hidden">
+            <div class="app-card p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-users-gear text-amber-600 me-2"></i>إدارة حسابات الكاشيرات</h2>
+                    <button class="btn btn-primary font-bold" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <i class="fa-solid fa-user-plus me-1"></i> إضافة كاشير جديد
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>كود الدخول (ID)</th>
+                                <th>اسم الكاشير</th>
+                                <th>الصلاحية</th>
+                                <th>كلمة السر</th>
+                                <th>حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: VAULT CLOSING -->
+<div class="modal fade" id="vaultModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-2xl overflow-hidden shadow-2xl">
+            <div class="modal-header bg-slate-900 text-white">
+                <h5 class="modal-title font-bold"><i class="fa-solid fa-vault text-amber-400 me-2"></i>تقفيل الوردية الخزنة</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body space-y-4 p-4">
+                
+                <!-- لوحة تفاصيل المدير فقط -->
+                <div class="admin-only hidden bg-slate-900 text-white p-4 rounded-xl space-y-2 border border-slate-700">
+                    <h6 class="text-amber-400 font-bold border-b border-slate-700 pb-2"><i class="fa-solid fa-user-shield me-1"></i> تقرير تقفيل الخزنة (خاص بالمدير)</h6>
+                    <div class="flex justify-between text-sm">
+                        <span>مبلغ عهدة الفتح:</span>
+                        <span id="admin-opening-cash" class="font-bold text-slate-200">0.00 ج.م</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span>مبيعات الوردية (كاش):</span>
+                        <span id="admin-sales-cash" class="font-bold text-emerald-400">0.00 ج.م</span>
+                    </div>
+                    <div class="flex justify-between text-base font-extrabold border-t border-slate-700 pt-2 text-amber-300">
+                        <span>المبلغ المفترض وجوده بالدرج:</span>
+                        <span id="admin-expected-cash">0.00 ج.م</span>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs font-semibold">
+                    <i class="fa-solid fa-triangle-exclamation me-1 text-amber-600"></i> أدخل المبلغ الفعلي الموجود في الدرج بدقة لتقفيل الخزنة.
+                </div>
+
+                <div>
+                    <label class="form-label font-bold text-slate-700">المبلغ الفعلي الموجود في الدرج الآن (ج.م)</label>
+                    <input type="number" step="0.01" id="vault-actual-cash" class="form-control form-control-lg text-center font-black text-indigo-950 bg-slate-50 border-amber-300" placeholder="0.00" oninput="calculateVaultDifference()">
+                </div>
+
+                <!-- نتيجة العجز/الزيادة للمدير فقط -->
+                <div class="admin-only hidden bg-slate-100 p-3 rounded-xl flex justify-between items-center font-bold text-sm">
+                    <span>حالة الخزنة (العجز/الزيادة):</span>
+                    <span id="vault-diff-display" class="text-slate-600">0.00 ج.م</span>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-slate-50">
+                <button type="button" class="btn btn-secondary rounded-lg" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" onclick="closeShiftAndLogout()" class="btn btn-danger font-bold rounded-lg"><i class="fa-solid fa-lock me-1"></i> تقفيل الوردية وتسليم الخزنة</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD PRODUCT -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-2xl">
+            <div class="modal-header bg-slate-900 text-white"><h5 class="modal-title font-bold">إضافة صنف جديد</h5></div>
+            <form onsubmit="saveNewProduct(event)">
+                <div class="modal-body space-y-3">
+                    <div><label class="font-bold text-xs">اسم الصنف</label><input type="text" id="new-p-name" class="form-control" required></div>
+                    <div><label class="font-bold text-xs">التصنيف</label><input type="text" id="new-p-cat" class="form-control" value="حلويات" required></div>
+                    <div>
+                        <label class="font-bold text-xs">نوع البيع</label>
+                        <select id="new-p-type" class="form-select font-semibold">
+                            <option value="weight">وزن (بالكيلو/جرام)</option>
+                            <option value="unit">عدد (بالقطعة)</option>
+                        </select>
+                    </div>
+                    <div><label class="font-bold text-xs">السعر (ج.م)</label><input type="number" step="any" id="new-p-price" class="form-control" required></div>
+                    <div><label class="font-bold text-xs">الكمية بالمخزن</label><input type="number" step="any" id="new-p-stock" class="form-control" required></div>
+                    <div><label class="font-bold text-xs">الباركود</label><input type="text" id="new-p-barcode" class="form-control" placeholder="اختياري"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-success font-bold">حفظ الصنف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD USER -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-2xl">
+            <div class="modal-header bg-slate-900 text-white"><h5 class="modal-title font-bold">إضافة كاشير جديد</h5></div>
+            <form onsubmit="saveNewUser(event)">
+                <div class="modal-body space-y-3">
+                    <div><label class="font-bold text-xs">كود الدخول</label><input type="text" id="new-u-id" class="form-control" placeholder="مثال: 102" required></div>
+                    <div><label class="font-bold text-xs">اسم الكاشير</label><input type="text" id="new-u-name" class="form-control" required></div>
+                    <div><label class="font-bold text-xs">كلمة السر</label><input type="password" id="new-u-pass" class="form-control" required></div>
+                    <div>
+                        <label class="font-bold text-xs">الصلاحية</label>
+                        <select id="new-u-role" class="form-select font-semibold">
+                            <option value="cashier">كاشير</option>
+                            <option value="admin">مدير</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary font-bold">حفظ الكاشير</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JS LIBRARIES -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const defaultData = {
+        users: [
+            { id: "1", name: "المدير العام", pass: "admin", role: "admin" },
+            { id: "101", name: "كاشير الصباح", pass: "1234", role: "cashier" }
+        ],
+        products: [
+            { id: 101, name: "بسبوسة بالمكسرات", category: "شرقي", type: "weight", price: 140, stock: 25, barcode: "1001" },
+            { id: 102, name: "كنافة نابلسية", category: "شرقي", type: "weight", price: 160, stock: 20, barcode: "1002" },
+            { id: 103, name: "تورتة شوكولاتة", category: "غربي", type: "unit", price: 250, stock: 10, barcode: "1003" }
+        ],
+        orders: [],
+        shifts: []
+    };
+
+    let db = JSON.parse(localStorage.getItem('sweet_pos_db')) || defaultData;
+    let currentUser = null;
+    let currentShift = null;
+    let cart = [];
+
+    function saveData() { localStorage.setItem('sweet_pos_db', JSON.stringify(db)); }
+
+    function handleLogin(e) {
+        e.preventDefault();
+        const userId = document.getElementById('login-user-id').value.trim();
+        const userPass = document.getElementById('login-password').value.trim();
+        const openingCash = parseFloat(document.getElementById('login-opening-cash').value) || 0;
+
+        const user = db.users.find(u => u.id === userId && u.pass === userPass);
+        if(!user) return alert("كود المستخدم أو كلمة السر غير صحيحة!");
+
+        currentUser = user;
+        currentShift = {
+            id: Date.now(),
+            userId: user.id,
+            userName: user.name,
+            startTime: new Date().toLocaleString('ar-EG'),
+            openingCash: openingCash,
+            salesCash: 0,
+            salesCard: 0
+        };
+
+        document.getElementById('screen-login').classList.add('hidden');
+        document.getElementById('main-dashboard').classList.remove('hidden');
+        document.getElementById('current-user-display').innerText = `${user.name} (${user.role === 'admin' ? 'مدير' : 'كاشير'})`;
+
+        document.querySelectorAll('.admin-only').forEach(el => {
+            if(user.role === 'admin') el.classList.remove('hidden');
+            else el.classList.add('hidden');
+        });
+
+        renderPOSProducts();
+        renderCart();
+        renderInventory();
+        renderUsers();
+        renderReports();
+    }
+
+    function switchTab(tabName) {
+        ['pos', 'products', 'reports', 'users'].forEach(t => {
+            const el = document.getElementById('screen-' + t);
+            if(el) el.classList.add('hidden');
+        });
+        document.getElementById('screen-' + tabName).classList.remove('hidden');
+    }
+
+    function openVaultModal() {
+        document.getElementById('vault-actual-cash').value = '';
+        document.getElementById('vault-diff-display').innerText = '0.00 ج.م';
+
+        if(currentUser && currentUser.role === 'admin' && currentShift) {
+            document.getElementById('admin-opening-cash').innerText = currentShift.openingCash.toFixed(2) + " ج.م";
+            document.getElementById('admin-sales-cash').innerText = currentShift.salesCash.toFixed(2) + " ج.م";
+            const expected = currentShift.openingCash + currentShift.salesCash;
+            document.getElementById('admin-expected-cash').innerText = expected.toFixed(2) + " ج.م";
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('vaultModal'));
+        modal.show();
+    }
+
+    function calculateVaultDifference() {
+        if(!currentShift) return;
+        const actualCash = parseFloat(document.getElementById('vault-actual-cash').value) || 0;
+        const expectedCash = currentShift.openingCash + currentShift.salesCash;
+        const diff = actualCash - expectedCash;
+        const diffText = document.getElementById('vault-diff-display');
+        
+        if(diff === 0) {
+            diffText.innerText = "0.00 ج.م (مطابق)";
+            diffText.className = "text-emerald-600 font-bold";
+        } else if(diff > 0) {
+            diffText.innerText = `+${diff.toFixed(2)} ج.م (زيادة)`;
+            diffText.className = "text-blue-600 font-bold";
+        } else {
+            diffText.innerText = `${diff.toFixed(2)} ج.م (عجز)`;
+            diffText.className = "text-rose-600 font-bold";
+        }
+    }
+
+    function closeShiftAndLogout() {
+        const actualCashVal = document.getElementById('vault-actual-cash').value;
+        if(actualCashVal === '') return alert("يرجى إدخال المبلغ الفعلي بالدرج!");
+
+        const actualCash = parseFloat(actualCashVal) || 0;
+        const expectedCash = currentShift.openingCash + currentShift.salesCash;
+        const diff = actualCash - expectedCash;
+
+        currentShift.endTime = new Date().toLocaleString('ar-EG');
+        currentShift.actualCash = actualCash;
+        currentShift.expectedCash = expectedCash;
+        currentShift.difference = diff;
+
+        if(!db.shifts) db.shifts = [];
+        db.shifts.push(currentShift);
+        saveData();
+
+        alert("تم تقفيل الوردية والخزنة بنجاح.");
+        location.reload();
+    }
+
+    function logout() {
+        if(confirm('هل تريد الخروج وتسجيل الدخول بحساب آخر؟')) {
+            location.reload();
+        }
+    }
+
+    function saveNewProduct(e) {
+        e.preventDefault();
+        const newP = {
+            id: Date.now(),
+            name: document.getElementById('new-p-name').value,
+            category: document.getElementById('new-p-cat').value,
+            type: document.getElementById('new-p-type').value,
+            price: parseFloat(document.getElementById('new-p-price').value),
+            stock: parseFloat(document.getElementById('new-p-stock').value),
+            barcode: document.getElementById('new-p-barcode').value || Date.now().toString()
+        };
+        db.products.push(newP);
+        saveData();
+        bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
+        e.target.reset();
+        renderPOSProducts();
+        renderInventory();
+        alert('تم إضافة الصنف بنجاح!');
+    }
+
+    function saveNewUser(e) {
+        e.preventDefault();
+        const newU = {
+            id: document.getElementById('new-u-id').value.trim(),
+            name: document.getElementById('new-u-name').value,
+            pass: document.getElementById('new-u-pass').value,
+            role: document.getElementById('new-u-role').value
+        };
+        if(db.users.find(u => u.id === newU.id)) return alert('كود المستخدم موجود بالفعل!');
+        db.users.push(newU);
+        saveData();
+        bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+        e.target.reset();
+        renderUsers();
+        alert('تم إضافة الكاشير بنجاح!');
+    }
+
+    function deleteProduct(id) {
+        if(confirm('هل تريد حذف هذا الصنف؟')) {
+            db.products = db.products.filter(p => p.id !== id);
+            saveData();
+            renderPOSProducts();
+            renderInventory();
+        }
+    }
+
+    function deleteUser(id) {
+        if(confirm('هل تريد حذف هذا المستخدم؟')) {
+            db.users = db.users.filter(u => u.id !== id);
+            saveData();
+            renderUsers();
+        }
+    }
+
+    function refundOrder(orderId) {
+        if(!confirm('هل تريد استرجاع الفاتورة بالكامل وإعادة الكميات للمخزون؟')) return;
+        const order = db.orders.find(o => o.id === orderId);
+        if(!order || order.refunded) return;
+
+        order.items.forEach(item => {
+            const prod = db.products.find(p => p.id === item.id);
+            if(prod) prod.stock += item.qty;
+        });
+
+        order.refunded = true;
+        if(order.method === 'cash') currentShift.salesCash -= order.total;
+        else currentShift.salesCard -= order.total;
+
+        saveData();
+        renderPOSProducts();
+        renderInventory();
+        renderReports();
+        alert('تم إلغاء واسترجاع الفاتورة بنجاح!');
+    }
+
+    function renderPOSProducts() {
+        const grid = document.getElementById('pos-products-grid');
+        const search = document.getElementById('pos-search').value.toLowerCase();
+        grid.innerHTML = '';
+        db.products.filter(p => p.name.toLowerCase().includes(search) || p.barcode.includes(search)).forEach(p => {
+            grid.innerHTML += `
+                <div class="col-6 col-md-4 col-lg-3" onclick="addToCart(${p.id})">
+                    <div class="p-3 rounded-2xl text-center product-card">
+                        <h4 class="font-bold text-sm text-slate-800">${p.name}</h4>
+                        <span class="text-xs text-amber-600 font-extrabold block mt-1">${p.price} ج.م / ${p.type === 'weight' ? 'كيلو' : 'قطعة'}</span>
+                        <span class="text-[10px] text-slate-400 font-semibold">المخزون: ${p.stock}</span>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function addToCart(pId) {
+        const product = db.products.find(p => p.id === pId);
+        if(!product) return;
+        const existing = cart.find(c => c.id === pId);
+        if(existing) {
+            existing.qty += (product.type === 'weight' ? 0.5 : 1);
+        } else {
+            cart.push({ id: product.id, name: product.name, price: product.price, qty: (product.type === 'weight' ? 0.5 : 1), type: product.type });
+        }
+        renderCart();
+    }
+
+    function renderCart() {
+        const tbody = document.getElementById('cart-table-body');
+        tbody.innerHTML = '';
+        let subtotal = 0;
+        cart.forEach((item, idx) => {
+            const total = item.qty * item.price;
+            subtotal += total;
+            tbody.innerHTML += `
+                <tr>
+                    <td class="font-bold text-slate-800">${item.name}</td>
+                    <td class="text-center">
+                        <input type="number" step="${item.type==='weight'?'0.05':'1'}" class="form-control form-control-sm text-center font-bold" value="${item.qty}" onchange="updateCartQty(${idx}, this.value)">
+                    </td>
+                    <td class="text-end font-extrabold">${total.toFixed(2)}</td>
+                    <td class="text-center"><button onclick="removeCartItem(${idx})" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-xmark font-bold"></i></button></td>
+                </tr>
+            `;
+        });
+        document.getElementById('cart-subtotal').innerText = subtotal.toFixed(2) + " ج.م";
+        updateCartTotals();
+    }
+
+    function updateCartQty(idx, val) {
+        cart[idx].qty = parseFloat(val) || 1;
+        renderCart();
+    }
+
+    function removeCartItem(idx) { cart.splice(idx, 1); renderCart(); }
+    function clearCart() { cart = []; renderCart(); }
+
+    function updateCartTotals() {
+        let subtotal = cart.reduce((acc, i) => acc + (i.qty * i.price), 0);
+        let discount = parseFloat(document.getElementById('cart-discount').value) || 0;
+        let final = Math.max(0, subtotal - discount);
+        document.getElementById('cart-final').innerText = final.toFixed(2) + " ج.م";
+    }
+
+    function processCheckout(payMethod) {
+        if(cart.length === 0) return alert("الفاتورة فارغة!");
+        let subtotal = cart.reduce((acc, i) => acc + (i.qty * i.price), 0);
+        let discount = parseFloat(document.getElementById('cart-discount').value) || 0;
+        let final = Math.max(0, subtotal - discount);
+
+        cart.forEach(c => {
+            const prod = db.products.find(p => p.id === c.id);
+            if(prod) prod.stock = Math.max(0, prod.stock - c.qty);
+        });
+
+        db.orders.push({
+            id: 'ORD-' + Date.now().toString().slice(-6),
+            cashier: currentUser.name,
+            date: new Date().toLocaleString('ar-EG'),
+            items: [...cart],
+            total: final,
+            method: payMethod,
+            refunded: false
+        });
+
+        if(payMethod === 'cash') currentShift.salesCash += final;
+        else currentShift.salesCard += final;
+
+        saveData();
+        alert("تم حفظ وطباعة الفاتورة بنجاح!");
+        cart = [];
+        document.getElementById('cart-discount').value = 0;
+        renderCart();
+        renderPOSProducts();
+        renderInventory();
+        renderReports();
+    }
+
+    function renderInventory() {
+        const tbody = document.getElementById('inventory-table-body');
+        tbody.innerHTML = '';
+        db.products.forEach((p, idx) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${idx+1}</td>
+                    <td class="font-bold text-slate-800">${p.name}</td>
+                    <td>${p.category}</td>
+                    <td>${p.type === 'weight' ? 'وزن (كيلو)' : 'عدد (قطعة)'}</td>
+                    <td class="font-bold">${p.price} ج.م</td>
+                    <td class="font-bold text-amber-600">${p.stock}</td>
+                    <td>${p.barcode}</td>
+                    <td><button onclick="deleteProduct(${p.id})" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderUsers() {
+        const tbody = document.getElementById('users-table-body');
+        tbody.innerHTML = '';
+        db.users.forEach(u => {
+            tbody.innerHTML += `
+                <tr>
+                    <td class="font-bold">${u.id}</td>
+                    <td>${u.name}</td>
+                    <td>${u.role === 'admin' ? '<span class="badge bg-primary">مدير</span>' : '<span class="badge bg-secondary">كاشير</span>'}</td>
+                    <td>${u.pass}</td>
+                    <td><button onclick="deleteUser('${u.id}')" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderReports() {
+        const activeOrders = db.orders.filter(o => !o.refunded);
+        let totalSales = activeOrders.reduce((a, b) => a + b.total, 0);
+        document.getElementById('report-total-sales').innerText = totalSales.toFixed(2) + " ج.م";
+        document.getElementById('report-total-orders').innerText = activeOrders.length;
+
+        // سجل الورديات
+        const shiftsTbody = document.getElementById('reports-shifts-body');
+        if(shiftsTbody) {
+            shiftsTbody.innerHTML = '';
+            (db.shifts || []).slice().reverse().forEach(s => {
+                let diffBadge = `<span class="text-emerald-600 font-bold">مطابق (0)</span>`;
+                if(s.difference < 0) diffBadge = `<span class="text-rose-600 font-bold">${s.difference.toFixed(2)} (عجز)</span>`;
+                else if(s.difference > 0) diffBadge = `<span class="text-blue-600 font-bold">+${s.difference.toFixed(2)} (زيادة)</span>`;
+
+                shiftsTbody.innerHTML += `
+                    <tr>
+                        <td class="font-bold">${s.userName}</td>
+                        <td>${s.startTime}</td>
+                        <td>${s.endTime || '-'}</td>
+                        <td>${s.openingCash.toFixed(2)} ج.م</td>
+                        <td class="text-emerald-700 font-bold">${s.salesCash.toFixed(2)} ج.م</td>
+                        <td class="font-bold">${s.expectedCash.toFixed(2)} ج.م</td>
+                        <td class="font-bold">${s.actualCash.toFixed(2)} ج.م</td>
+                        <td>${diffBadge}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // سجل الفواتير
+        const tbody = document.getElementById('reports-orders-body');
+        tbody.innerHTML = '';
+        db.orders.slice().reverse().forEach(o => {
+            tbody.innerHTML += `
+                <tr class="${o.refunded ? 'bg-rose-50 text-slate-400 line-through' : ''}">
+                    <td class="font-bold">${o.id}</td>
+                    <td>${o.cashier}</td>
+                    <td>${o.date}</td>
+                    <td>${o.method === 'cash' ? 'كاش' : 'فيزا'}</td>
+                    <td>${o.refunded ? '<span class="badge bg-danger">مسترجعة</span>' : '<span class="badge bg-success">نشطة</span>'}</td>
+                    <td class="font-bold">${o.total.toFixed(2)} ج.م</td>
+                    <td>
+                        ${!o.refunded ? `<button onclick="refundOrder('${o.id}')" class="btn btn-sm btn-outline-danger font-bold">استرجاع/إلغاء</button>` : 'تم الإلغاء'}
+                    </td>
+                </tr>
+            `;
+        });
+    }
+</script>
+</body>
+</html>
